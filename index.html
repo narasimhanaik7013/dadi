@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dadi's Celebration ❤️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Great+Vibes&family=Cinzel:wght@400;700&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --amber: #ffbf00;
+            --midnight: #050505;
+        }
+        body {
+            background-color: var(--midnight);
+            color: #d1d1d1;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            selection-background-color: rgba(212, 175, 55, 0.2);
+        }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-romantic { font-family: 'Great Vibes', cursive; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+
+        .stage {
+            display: none;
+            min-height: 100vh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+        .stage.active {
+            display: flex;
+        }
+
+        #reveal-stage {
+            position: relative;
+            overflow-y: auto;
+            display: none;
+            background: var(--midnight);
+        }
+
+        .door-panel {
+            position: fixed;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: #0a0a0a;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            align-items: center;
+        }
+        #door-left { left: 0; justify-content: flex-end; padding-right: 1.5rem; }
+        #door-right { right: 0; justify-content: flex-start; padding-left: 1.5rem; }
+
+        .candle-flame {
+            fill: #ff6b6b;
+            filter: drop-shadow(0 0 15px #ff6b6b);
+            animation: flicker 0.6s infinite alternate ease-in-out;
+        }
+        @keyframes flicker {
+            0% { transform: scale(1); opacity: 0.9; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .photo-exhibit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(5,5,5,0.9), transparent 60%);
+            z-index: 1;
+        }
+
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #222; }
+
+        .letter-scroll {
+            background: rgba(10, 10, 10, 0.4);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+
+        .gallery-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 48px;
+          max-width: 1200px;
+          margin: 200px auto;
+          padding: 0 16px;
+          opacity: 0;
+          transform: translateY(60px);
+          transition: all 1.2s ease;
+          margin-bottom: 50px;
+        }
+
+        .gallery-grid.reveal {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* ===== CARD ===== */
+        .photo-card {
+          position: relative;
+          aspect-ratio: 4 / 4.5;
+          overflow: hidden;
+          border: 5px solid rgba(255,255,255,0.08);
+          box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+          background: #111;
+          border-radius:10px;
+        }
+
+        /* ===== IMAGE ===== */
+        .photo-bg {
+          position: absolute;
+          inset: 0;
+          background-size: cover;
+          background-position: center;
+
+          opacity: 0.35;
+          transition: transform 2s ease, filter 2s ease, opacity 2s ease;
+        }
+
+        .photo-card:hover .photo-bg {
+          transform: scale(1.08);
+          filter: grayscale(0%);
+          opacity: 0.7;
+        }
+
+        /* ===== OVERLAY TEXT ===== */
+        .photo-overlay {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-end;
+          padding: 48px;
+          color: #fff;
+          z-index: 2;
+        }
+
+        .exhibit {
+          font-size: 10px;
+          letter-spacing: 0.5em;
+          color: rgba(255,180,60,0.6);
+          margin-bottom: 12px;
+          opacity: 0;
+          transform: translateY(12px);
+          transition: all 1s ease;
+        }
+
+        .photo-card:hover .exhibit {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .title {
+          font-family: Georgia, serif;
+          font-size: 22px;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          opacity: 0.85;
+        }
+
+        .line {
+          width: 0;
+          height: 1px;
+          background: rgba(255,180,60,0.5);
+          margin-top: 20px;
+          transition: width 1s ease;
+        }
+
+        .photo-card:hover .line {
+          width: 64px;
+        }
+
+
+
+
+
+
+
+        /* ===== HEADING ===== */
+        .reel-heading{
+          text-align:center;
+          margin-top:40px;
+          margin-bottom:100px;
+
+        }
+        .reel-heading-wrapper{
+  position: relative;
+  z-index: 50;       /* higher than reel */
+}
+
+.reel-heading{
+  position: relative;
+  background: transparent;
+}
+
+
+        .reel-heading h1{
+          font-family:'Great Vibes', cursive;
+          font-size:clamp(2.5rem,5vw,4.5rem);
+          letter-spacing:2px;
+          font-weight:400;
+          color:#FE9135;
+        }
+
+        .reel-heading span{
+          display:block;
+          margin-top:10px;
+          font-size:0.95rem;
+          letter-spacing:0.35em;
+          text-transform:uppercase;
+          color:#666;
+        }
+
+        /* ===== VIEWPORT ===== */
+        .reel-wrapper{
+          width:100%;
+          overflow:hidden;
+          padding:40px 0 60px;
+          margin-top: -30px;
+        }
+
+        /* ===== FILM STRIP ===== */
+        .film-reel{
+          display:flex;
+          width:max-content;
+          animation: scrollReel 30s linear infinite;
+        }
+
+        /* ===== FILM FRAME ===== */
+        .film-frame{
+          position:relative;
+          width:170px;
+          height:240px;
+          margin-right:18px;
+          border:5px solid #1a1a1a;
+          box-shadow:
+            inset 0 0 20px rgba(0,0,0,0.7),
+            0 10px 30px rgba(0,0,0,0.5);
+          overflow:hidden;
+          flex-shrink:0;
+          transition: transform 0.45s ease;
+        }
+
+        /* 🎞️ STAGGERED LOOK */
+        .film-frame:nth-child(odd){
+          transform: translateY(-12px);
+        }
+        .film-frame:nth-child(even){
+          transform: translateY(12px);
+        }
+
+        /* ===== FILM HOLES ===== */
+        .film-frame::before,
+        .film-frame::after{
+          content:'';
+          position:absolute;
+          top:0;
+          width:7px;
+          height:100%;
+          background:
+            repeating-linear-gradient(
+              to bottom,
+              #000 0px,
+              #000 10px,
+              transparent 10px,
+              transparent 22px
+            );
+        }
+        .film-frame::before{ left:-12px; }
+        .film-frame::after{ right:-12px; }
+
+        /* ===== IMAGE ===== */
+        .film-frame img{
+          width:100%;
+          height:100%;
+          object-fit:cover;
+          cursor:pointer;
+          transition: transform 0.45s ease;
+        }
+
+        /* 🔍 HOVER EFFECT */
+        .film-frame:hover{
+          z-index:20;
+          transform: scale(1.25) translateY(0);
+        }
+        .film-frame:hover img{
+          transform: scale(1.05);
+
+        }
+
+        /* ===== SCROLL ===== */
+        @keyframes scrollReel{
+          from{ transform: translateX(0); }
+          to{ transform: translateX(-50%); }
+        }
+        /* 🔥 PAUSE WHEN IMAGE OR FRAME IS HOVERED */
+        .film-reel:has(.film-frame:hover),
+        .film-reel:has(.film-frame img:hover){
+          animation-play-state: paused;
+        }
+
+
+
+
+        .space{
+          margin-top: -100px;
+          background-color: white;
+          position: relative;
+          background: white;
+          width: 100vw;
+    margin-left: calc(50% - 50vw);
+    padding: 0px 0;
+    background: #fff;
+
+        }
+      .ending {
+        margin-top:-30px;
+        width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: 0px 0;
+  background: #fff;
+      }
+      .ux-archive-gallery{
+        max-width:1500px;
+        margin:160px auto 220px;
+        padding:0 72px;
+        display:grid;
+        grid-template-columns: 1fr 1.15fr 1fr;
+        gap:64px;
+      }
+
+      /* ================= PAGE LOAD MOTION ================= */
+      .ux-archive-item{
+        opacity:0;
+        transform: translateY(80px) scale(0.98);
+        animation: uxArchiveIntro 2.2s cubic-bezier(.19,1,.22,1) forwards;
+      }
+
+      /* Stagger (left → right) */
+      .ux-archive-delay-1{ animation-delay: 0.2s; }
+      .ux-archive-delay-2{ animation-delay: 0.5s; }
+      .ux-archive-delay-3{ animation-delay: 0.8s; }
+
+      /* Intro animation */
+      @keyframes uxArchiveIntro{
+        to{
+          opacity:1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* ================= FRAME ================= */
+      .ux-archive-frame{
+        background:#111;
+        padding:18px;
+        box-shadow: 0 32px 96px rgba(0,0,0,0.7);
+        transition: box-shadow 0.8s ease;
+      }
+
+      /* ================= INNER FRAME ================= */
+      .ux-archive-frame-inner{
+        background:#ffffff;
+        padding:6px;
+        overflow:hidden;
+      }
+
+      /* ================= IMAGE ================= */
+      .ux-archive-frame-inner img{
+        width:100%;
+        aspect-ratio:3 / 3.6;
+        object-fit:cover;
+        display:block;
+
+        transition:
+          transform 1.8s ease,
+          filter 1.6s ease;
+
+        filter: saturate(0.96) contrast(0.98);
+      }
+
+      /* ================= HOVER EFFECT ================= */
+      .ux-archive-frame:hover{
+        box-shadow: 0 48px 140px rgba(0,0,0,0.85);
+      }
+
+      .ux-archive-frame:hover img{
+        transform: scale(1.06) translateY(-2px);
+        filter: saturate(1) contrast(1);
+      }
+
+      /* ================= CAPTION ================= */
+      .ux-archive-caption{
+        margin-top:18px;
+        text-align:center;
+        font-family:'Cinzel', serif;
+        font-size:0.72rem;
+        letter-spacing:0.38em;
+        color:rgba(255,255,255,0.65);
+      }
+
+      /* ================= RESPONSIVE ================= */
+      @media (max-width:1100px){
+        .ux-archive-gallery{
+          grid-template-columns:1fr;
+          gap:88px;
+          padding:0 48px;
+        }
+      }
+
+    </style>
+</head>
+<body>
+
+    <!-- STAGE: DARK -->
+    <div id="dark-stage" class="stage active flex-col items-center justify-center bg-black">
+        <p class="text-white/20 font-serif text-3xl mb-16 italic tracking-[0.3em] opacity-0" id="dark-text">the room is still Dark...</p>
+        <button onclick="openDoor()" class="group relative px-16 py-8 border border-white/10 rounded-full transition-all duration-700 hover:border-amber-500/40">
+            <span class="relative flex items-center text-white/80 text-xl tracking-[0.2em] font-light">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mr-4 group-hover:scale-110 transition-transform"><path d="M13 4h3a2 2 0 0 1 2 2v14"/><path d="M2 20h3"/><path d="M13 20h3"/><path d="M10 12v.01"/><path d="M10 20V4.5"/><path d="M10 4.5C10 3.12 8.88 2 7.5 2S5 3.12 5 4.5V20"/></svg>
+                OPEN DOOR
+            </span>
+        </button>
+    </div>
+
+    <!-- STAGE: DOOR -->
+    <div id="door-left" class="door-panel" style="display:none;">
+        <div class="w-1 h-32 bg-amber-600/10 rounded-full"></div>
+    </div>
+    <div id="door-right" class="door-panel" style="display:none;">
+        <div class="w-1 h-32 bg-amber-600/10 rounded-full"></div>
+    </div>
+
+    <!-- STAGE: CANDLES (CAKE) -->
+    <div id="candles-stage" class="stage flex-col items-center justify-center">
+        <div id="cake-container" class="relative flex flex-col items-center py-20">
+            <svg id="cake-svg" width="400" height="350" viewBox="0 0 240 200" class="drop-shadow-[0_30px_70px_rgba(0,0,0,0.9)]">
+                <!-- Bottom Layer -->
+                <path d="M20 160 Q20 140 120 140 Q220 140 220 160 L220 190 Q220 210 120 210 Q20 210 20 190 Z" fill="#b8860b" opacity="0.7" />
+                <!-- Middle Layer -->
+                <path d="M40 110 Q40 90 120 90 Q200 90 200 110 L200 140 Q200 160 120 160 Q40 160 40 140 Z" fill="#d4af37" />
+                <!-- Top Layer -->
+                <path d="M60 70 Q60 50 120 50 Q180 50 180 70 L180 90 Q180 110 120 110 Q60 110 60 90 Z" fill="#daa520" />
+
+                <!-- Drips -->
+                <path d="M60 85 Q75 100 90 85 Q105 100 120 85 Q135 100 150 85 Q165 100 180 85" fill="none" stroke="white" stroke-width="3" opacity="0.3" />
+
+                <!-- Candle -->
+                <g id="candle-main">
+                    <rect x="116" y="20" width="8" height="35" fill="#fcfcfc" rx="1" />
+                    <g id="cake-flame" style="display:none;">
+                        <path d="M120 5 Q128 15 120 25 Q112 15 120 5" class="candle-flame" />
+                        <path d="M120 10 Q124 15 120 20 Q116 15 120 10" fill="#ffd93d" />
+                    </g>
+                </g>
+
+                <!-- Cut Line -->
+                <path id="cake-cut-line" d="M120 50 L120 210" stroke="rgba(255,255,255,0.6)" stroke-width="4" stroke-dasharray="10 5" style="display:none;" />
+            </svg>
+
+            <div id="cake-actions" class="mt-20 h-24 flex items-center justify-center">
+                <button id="light-btn" onclick="lightCandle()" class="px-12 py-5 bg-amber-500 text-black font-cinzel tracking-widest text-sm rounded-full hover:scale-105 transition-all shadow-xl shadow-amber-500/20">
+                    LIGHT ON CANDLE
+                </button>
+                <button id="cut-btn" onclick="cutCake()" style="display:none;" class="px-16 py-6 bg-white text-black font-romantic text-4xl rounded-full hover:scale-105 transition-all shadow-2xl">
+                    Cut The Cake
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE: REVEAL -->
+    <div id="reveal-stage">
+        <!-- Hero Section -->
+        <section class="relative min-h-screen flex flex-col items-center justify-center text-center py-40 px-6 overflow-hidden">
+          <div class="absolute inset-0 z-0">
+              <div class="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black z-10"></div>
+              <div class="w-full h-full bg-[url('https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-15"></div>
+          </div>
+
+          <div class="relative z-20 space-y-16 max-w-7xl w-full">
+              <div class="transform transition-all duration-1000">
+                  <h1 class="font-serif text-[clamp(4rem,15vw,12rem)] leading-none tracking-tighter text-white uppercase font-black italic">
+                      Happy <br> <span class="text-rose-600 drop-shadow-[0_0_30px_rgba(225,29,72,0.5)]">Birthday</span>
+                  </h1>
+                  <div class="h-1 bg-rose-600 mx-auto mt-8 mb-4 w-48"></div>
+                  <p class="font-serif text-xl md:text-3xl tracking-[0.5em] text-white/60 uppercase">Grace Dara Paul</p>
+              </div>
+
+
+                <!-- Gallery Grid -->
+                <section class="ux-archive-gallery">
+
+                  <div class="ux-archive-item ux-archive-delay-1">
+                    <div class="ux-archive-frame">
+                      <div class="ux-archive-frame-inner">
+                        <img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi1.jpeg" alt="">
+                      </div>
+                    </div>
+                    <div class="ux-archive-caption"></div>
+                  </div>
+
+                  <div class="ux-archive-item ux-archive-delay-2">
+                    <div class="ux-archive-frame">
+                      <div class="ux-archive-frame-inner">
+                        <img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi2.jpeg" alt="">
+                      </div>
+                    </div>
+                    <div class="ux-archive-caption"></div>
+                  </div>
+
+                  <div class="ux-archive-item ux-archive-delay-3">
+                    <div class="ux-archive-frame">
+                      <div class="ux-archive-frame-inner">
+                        <img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi3.jpeg" alt="">
+                      </div>
+                    </div>
+                    <div class="ux-archive-caption"></div>
+                  </div>
+
+                </section>
+
+        <!-- 💖 HEADING -->
+        <div class="space">
+        <div class="reel-heading">
+          <h1>Meet Memories With My Mom</h1>
+          <span>a reel of little moments i adore</span>
+        </div>
+
+        <!-- 🎞️ FILM REEL -->
+        <div class="reel-wrapper">
+          <div class="film-reel" id="filmReel">
+
+            <!-- ORIGINAL -->
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi4.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi5.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi6.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi7.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi8.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi9.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi10.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi11.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi1.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi2.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi3.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi4.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi5.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi6.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi7.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi8.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi9.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi10.jpeg"></div>
+          <div class="film-frame"><img src="C:\Users\naras\Downloads\Dadi celebration\images\dadi11.jpeg"></div>
+
+
+          </div>
+        </div>
+
+</div>
+        <!-- Final Footer -->
+        <div class="ending">
+        <footer class="py-40 text-center relative overflow-hidden bg-black">
+            <div class="flex justify-center gap-12 mb-12">
+                <template x-for="i in [0,1,2]" :key="i">
+                    <svg class="w-8 h-8 text-rose-600 fill-rose-600/20 animate-pulse" viewBox="0 0 24 24" fill="currentColor" :style="'animation-delay: ' + (i * 1.3) + 's'"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </template>
+            </div>
+            <h2 class="font-serif text-5xl md:text-8xl tracking-[0.2em] text-white uppercase opacity-90">
+                Forever <span class="text-rose-600">&</span> Always
+            </h2>
+          </br>
+            <h2>For You Dadi ❤️</span> </h2>
+        </footer>
+    </div>
+</template>
+</footer>
+</div>
+
+    <script>
+    const gallery = document.getElementById("gallery");
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            gallery.classList.add("reveal");
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(gallery);
+
+
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        window.onload = () => {
+            gsap.to("#dark-text", { opacity: 1, y: -30, duration: 2.5, delay: 0.8, ease: "power2.out" });
+        };
+
+        function openDoor() {
+            const left = document.getElementById('door-left');
+            const right = document.getElementById('door-right');
+            left.style.display = 'flex';
+            right.style.display = 'flex';
+
+            gsap.to("#dark-stage", { opacity: 0, duration: 1.5, onComplete: () => {
+                document.getElementById('dark-stage').style.display = 'none';
+            }});
+
+            gsap.to("#door-left", { x: "-100%", duration: 2.5, delay: 1, ease: "power4.inOut" });
+            gsap.to("#door-right", { x: "100%", duration: 2.5, delay: 1, ease: "power4.inOut", onComplete: () => {
+                left.style.display = 'none';
+                right.style.display = 'none';
+                startCakeStage();
+            }});
+        }
+
+        function startCakeStage() {
+            const stage = document.getElementById('candles-stage');
+            stage.style.display = 'flex';
+            gsap.fromTo(stage, { opacity: 0 }, { opacity: 1, duration: 2 });
+
+            // Subtle floating hearts background
+            for(let i=0; i<20; i++) {
+                createFloatingHeart();
+            }
+        }
+
+        function createFloatingHeart() {
+            const heart = document.createElement('div');
+            heart.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#d4af37" class="opacity-[0.05]"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
+            heart.style.position = 'fixed';
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.top = '110%';
+            heart.style.zIndex = '0';
+            document.body.appendChild(heart);
+
+            gsap.to(heart, {
+                y: -window.innerHeight - 200,
+                x: (Math.random() - 0.5) * 300,
+                rotation: Math.random() * 360,
+                opacity: 0,
+                duration: 8 + Math.random() * 12,
+                ease: "none",
+                onComplete: () => {
+                    heart.remove();
+                    createFloatingHeart();
+                }
+            });
+        }
+
+        function lightCandle() {
+            const flame = document.getElementById('cake-flame');
+            flame.style.display = 'block';
+            gsap.fromTo(flame, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 1, ease: "elastic.out(1, 0.5)" });
+
+            document.getElementById('light-btn').style.display = 'none';
+            setTimeout(() => {
+                const cutBtn = document.getElementById('cut-btn');
+                cutBtn.style.display = 'block';
+                gsap.fromTo(cutBtn, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 1.5, ease: "power3.out" });
+            }, 2500);
+        }
+
+        function cutCake() {
+            const line = document.getElementById('cake-cut-line');
+            line.style.display = 'block';
+
+            gsap.fromTo(line, { strokeDashoffset: 1000, strokeDasharray: 1000 }, { strokeDashoffset: 0, duration: 2, ease: "power1.inOut", onComplete: () => {
+                gsap.to("#cake-container", { scale: 1.05, opacity: 0, duration: 1.5, delay: 0.5, onComplete: revealFinalStage });
+            }});
+
+            confetti({
+                particleCount: 180,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#d4af37', '#ffffff', '#ffd93d', '#daa520'],
+                ticks: 300
+            });
+        }
+
+        function revealFinalStage() {
+            document.getElementById('candles-stage').style.display = 'none';
+            const reveal = document.getElementById('reveal-stage');
+            reveal.style.display = 'block';
+
+            gsap.fromTo("#reveal-header", { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 3, ease: "power4.out" });
+            gsap.fromTo("#reveal-gallery", { y: 100, opacity: 0 }, { y: 0, opacity: 1, duration: 2.5, delay: 1.5, ease: "power3.out" });
+
+            // Initialize scroll animations
+            gsap.utils.toArray('.scroll-reveal').forEach(el => {
+                gsap.to(el, {
+                    scrollTrigger: {
+                        trigger: el,
+                        start: "top 85%",
+                    },
+                    opacity: 1,
+                    y: 0,
+                    duration: 2,
+                    ease: "power2.out"
+                });
+            });
+
+            // Burst of confetti on reveal
+            setTimeout(() => {
+                const duration = 15 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                const interval = setInterval(function() {
+                    const timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) return clearInterval(interval);
+                    const particleCount = 50 * (timeLeft / duration);
+                    confetti({ ...defaults, particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } });
+                }, 250);
+            }, 500);
+        }
+        const reel = document.getElementById("filmReel");
+        const frames = document.querySelectorAll(".film-frame");
+
+        /* Pause reel only on frame hover */
+        frames.forEach(frame=>{
+          frame.addEventListener("mouseenter",()=>{
+            reel.style.animationPlayState="paused";
+          });
+          frame.addEventListener("mouseleave",()=>{
+            reel.style.animationPlayState="running";
+          });
+        });
+
+        function openNote() {
+            gsap.to("#note-closed", { scale: 1.05, opacity: 0, duration: 1, ease: "power2.in", onComplete: () => {
+                document.getElementById('note-closed').style.display = 'none';
+                const open = document.getElementById('note-open');
+                open.style.display = 'block';
+                gsap.fromTo(open, { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 2, ease: "power3.out" });
+            }});
+        }
+    </script>
+</body>
+</html>
